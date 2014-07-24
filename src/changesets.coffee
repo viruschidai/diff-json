@@ -78,7 +78,7 @@ convertArrayToObj = (arr, uniqKey) ->
       key = value[uniqKey]
       obj["$#{key}"] = value
   else
-    for index, value of arr then obj["$#{index}"] = value
+    for index, value of arr then obj[index] = value
   return obj
 
 
@@ -89,12 +89,33 @@ comparePrimitives = (oldObj, newObj, path) ->
   return changes
 
 
+# applyChange = (obj, change) ->
+#   keys = change.key
+#   ptr = obj
+#   for index, key of keys
+#     console.log 'key =', key
+
+#     if index is keys.length - 1
+#       if change.type is op.DELETED
+#         if Array.isArray ptr
+#         delete ptr[key]
+#       else
+#         ptr[key] = change.value
+#     else
+#       if /\$/gi.test key and Array.isArray ptr
+#         ptr = _.find ptr, key.replace '$', ''
+#       else
+#         ptr = ptr[key]
+
+
 module.exports = exports =
   diff: (oldObj, newObj, embededObjKeys) ->
     return compare oldObj, newObj, [], embededObjKeys
 
 
-  apply: ->
+  apply: (obj, changeset) ->
+    for change in changeset
+      applyChange obj, change
 
 
-  revert: ->
+  revert: (obj, changeset) ->
