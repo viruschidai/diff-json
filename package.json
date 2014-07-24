@@ -1,0 +1,31 @@
+{
+  "name": "changes",
+  "version": "0.0.1",
+  "description": "Generates changesets for javascript objects. The changesets can be stored as a way of auditing history of an object.",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test mocha --compilers coffee:coffee-script/register -R spec --recursive test",
+    "prepublish": "coffee --output dist --compile src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:viruschidai/changesets.git"
+  },
+  "keywords": [
+    "javascript"
+  ],
+  "author": "viruschidai@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/viruschidai/changesets/issues"
+  },
+  "homepage": "https://github.com/viruschidai/changesets",
+  "dependencies": {
+    "underscore": "^1.6.0"
+  },
+  "devDependencies": {
+    "coffee-script": "^1.7.1",
+    "expect.js": "^0.3.1",
+    "mocha": "^1.20.1"
+  }
+}
