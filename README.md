@@ -1,6 +1,6 @@
 # changesets
 
-A changesets tool for javascript objects.
+A changesets tool for javascript objects inspired by https://github.com/eugeneware/changeset
 
 ## Features
 
