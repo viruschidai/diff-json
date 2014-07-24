@@ -1,11 +1,42 @@
 # changesets
 
-A changesets tool for javascript objects inspired by https://github.com/eugeneware/changeset
+A changesets tool for javascript objects inspired by https://github.com/eugeneware/changeset.
 
 ## Features
 
-### Generate diff between different versions of an object
+### Generate diff between different versions of an object.
 
+If a key is specified for an embedded array, the diff will be generated based on the objects have same keys.
+
+Example:
+```javascript
+
+  var changesets = require('./index');
+  var newObj, oldObj;
+
+  oldObj = {name: 'joe', age: 55, coins: [2, 5], children: [
+    {name: 'kid1', age: 1 },
+    {name: 'kid2', age: 2 }
+  ]};
+
+  newObj = {name: 'smith', coins: [2, 5, 1], children: [
+    {name: 'kid3', age: 3 },
+    {name: 'kid1', age: 0 },
+    {name: 'kid2', age: 2 }
+  ]};
+
+  diffs = changesets.diff(oldObj, newObj, {
+    'children': 'name'
+  });
+
+  expect(diffs).to.eql([
+    {type: 'deleted', key: ['age'], value: 55 },
+    {type: 'modified', key: ['name'], value: 'smith', oldValue: 'joe'},
+    {type: 'added', key: ['coins', '$2'], value: 1 },
+    {type: 'added', key: ['children', '$kid3'], value: {name: 'kid3', age: 3 } },
+    {type: 'modified', key: ['children', '$kid1', 'age'], value: 0, oldValue: 1 }
+  ]);
+```
 
 ### Apply changeset to an object to make a new version of the object
 
