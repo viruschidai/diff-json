@@ -1,10 +1,11 @@
 expect = require 'expect.js'
 changesets = require '../src/changesets'
+{op} = changesets
 
 describe 'changesets', ->
   oldObj = newObj = changeset = changesetWithouEmbeddedKey = null
 
-  before ->
+  beforeEach ->
     oldObj =
       name: 'joe'
       age: 55
@@ -24,22 +25,22 @@ describe 'changesets', ->
       ]
 
     changeset = [
-      {type: 'deleted', key: [ 'age' ], value: 55}
-      {type: 'modified', key: [ 'name' ], value: 'smith', oldValue: 'joe'}
-      {type: 'added', key: [ 'coins', 2 ], value: 1}
-      {type: 'added', key: [ 'children', '$kid3' ], value: {name: 'kid3', age: 3}}
-      {type: 'modified', key: [ 'children', '$kid1', 'age' ], value: 0, oldValue: 1}
+      {type: op.MODIFIED, key: [ 'name' ], value: 'smith', oldValue: 'joe'}
+      {type: op.ADDED, key: [ 'coins', 2 ], value: 1}
+      {type: op.MODIFIED, key: [ 'children', '$name=kid1', 'age' ], value: 0, oldValue: 1}
+      {type: op.ADDED, key: [ 'children', '$name=kid3' ], value: {name: 'kid3', age: 3}}
+      {type: op.DELETED, key: [ 'age' ], value: 55}
     ]
 
     changesetWithouEmbeddedKey = [
-      {type: 'deleted', key: [ 'age' ], value: 55}
-      {type: 'modified', key: [ 'name' ], value: 'smith', oldValue: 'joe'}
-      {type: 'added', key: [ 'coins', 2 ], value: 1}
-      {type: 'added', key: [ 'children', 2 ], value: {name: 'kid2', age: 2}}
-      {type: 'modified', key: [ 'children', 0, 'name' ], value: 'kid3', oldValue: 'kid1'}
-      {type: 'modified', key: [ 'children', 0, 'age' ], value: 3, oldValue: 1}
-      {type: 'modified', key: [ 'children', 1, 'name' ], value: 'kid1', oldValue: 'kid2'}
-      {type: 'modified', key: [ 'children', 1, 'age' ], value: 0, oldValue: 2}
+      {type: op.MODIFIED, key: [ 'name' ], value: 'smith', oldValue: 'joe'}
+      {type: op.ADDED, key: [ 'coins', 2 ], value: 1}
+      {type: op.MODIFIED, key: [ 'children', 0, 'name' ], value: 'kid3', oldValue: 'kid1'}
+      {type: op.MODIFIED, key: [ 'children', 0, 'age' ], value: 3, oldValue: 1}
+      {type: op.MODIFIED, key: [ 'children', 1, 'name' ], value: 'kid1', oldValue: 'kid2'}
+      {type: op.MODIFIED, key: [ 'children', 1, 'age' ], value: 0, oldValue: 2}
+      {type: op.ADDED, key: [ 'children', 2 ], value: {name: 'kid2', age: 2}}
+      {type: op.DELETED, key: [ 'age' ], value: 55}
     ]
 
 
@@ -54,17 +55,31 @@ describe 'changesets', ->
       expect(diffs).to.eql changeset
 
 
-  describe 'apply()', ->
+  describe 'applyChange()', ->
 
     it 'should transfer oldObj to newObj with changeset', ->
-      obj = changesets.apply oldObj, changeset
-      expect(obj).to.eql {}
+      changesets.applyChange oldObj, changeset
+      newObj.children.sort (a, b) -> a.name > b.name
+      expect(oldObj).to.eql newObj
 
     it 'should transfer oldObj to newObj with changesetWithouEmbeddedKey', ->
+      changesets.applyChange oldObj, changesetWithouEmbeddedKey
+      newObj.children.sort (a, b) -> a.name > b.name
+      oldObj.children.sort (a, b) -> a.name > b.name
+      expect(oldObj).to.eql newObj
 
 
   describe 'revert()', ->
 
     it 'should transfer newObj to oldObj with changeset', ->
+      changesets.revertChange newObj, changeset
+      oldObj.children.sort (a, b) -> a.name > b.name
+      newObj.children.sort (a, b) -> a.name > b.name
+      expect(newObj).to.eql oldObj
+
 
     it 'should transfer newObj to oldObj with changesetWithouEmbeddedKey', ->
+      changesets.revertChange newObj, changesetWithouEmbeddedKey
+      oldObj.children.sort (a, b) -> a.name > b.name
+      newObj.children.sort (a, b) -> a.name > b.name
+      expect(newObj).to.eql oldObj
