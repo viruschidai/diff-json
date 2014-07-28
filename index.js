@@ -1,1 +1,1 @@
-require('../dist/changesets')
+module.exports = require('./dist/changesets')

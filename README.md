@@ -8,40 +8,179 @@ A changesets tool for javascript objects inspired by https://github.com/eugenewa
 
 If a key is specified for an embedded array, the diff will be generated based on the objects have same keys.
 
-Example:
+#### Examples:
+
 ```javascript
 
   var changesets = require('./index');
   var newObj, oldObj;
 
-  oldObj = {name: 'joe', age: 55, coins: [2, 5], children: [
-    {name: 'kid1', age: 1 },
-    {name: 'kid2', age: 2 }
-  ]};
+  oldObj = {
+    name: 'joe',
+    age: 55,
+    coins: [2, 5],
+    children: [
+      {name: 'kid1', age: 1 },
+      {name: 'kid2', age: 2 }
+    ]};
 
-  newObj = {name: 'smith', coins: [2, 5, 1], children: [
-    {name: 'kid3', age: 3 },
-    {name: 'kid1', age: 0 },
-    {name: 'kid2', age: 2 }
-  ]};
+  newObj = {
+    name: 'smith',
+    coins: [2, 5, 1],
+    children: [
+      {name: 'kid3', age: 3 },
+      {name: 'kid1', age: 0 },
+      {name: 'kid2', age: 2 }
+    ]};
 
-  diffs = changesets.diff(oldObj, newObj, {
-    'children': 'name'
-  });
+
+  # Assume children is an array of child object and the child object has 'name' as its primary key
+  diffs = changesets.diff(oldObj, newObj, {children: 'name'});
 
   expect(diffs).to.eql([
-    {type: 'deleted', key: ['age'], value: 55 },
-    {type: 'modified', key: ['name'], value: 'smith', oldValue: 'joe'},
-    {type: 'added', key: ['coins', '$2'], value: 1 },
-    {type: 'added', key: ['children', '$kid3'], value: {name: 'kid3', age: 3 } },
-    {type: 'modified', key: ['children', '$kid1', 'age'], value: 0, oldValue: 1 }
+    {
+      type: '+-',
+      key: [ 'name' ],
+      value: 'smith',
+      oldValue: 'joe'
+    },
+    {
+      type: '+',
+      key: [ 'coins', '2' ],
+      value: 1
+    },
+    {
+      type: '+-',
+      key: [ 'children', '$name=kid1', 'age' ],
+      value: 0,
+      oldValue: 1
+    },
+    {
+      type: '+',
+      key: [ 'children', '$name=kid3' ],
+      value: { name: 'kid3', age: 3 } },
+    {
+      type: '-',
+      key: [ 'age' ],
+      value: 55
+    }
   ]);
 ```
 
 ### Apply changeset to an object to make a new version of the object
+#### Examples:
+
+```javascript
+
+  var changesets = require('./index');
+  var oldObj = {
+    name: 'joe',
+    age: 55,
+    coins: [2, 5],
+    children: [
+      {name: 'kid1', age: 1 },
+      {name: 'kid2', age: 2 }
+    ]};
+
+
+  # Assume children is an array of child object and the child object has 'name' as its primary key
+  diffs = [
+    {
+      type: '+-',
+      key: [ 'name' ],
+      value: 'smith',
+      oldValue: 'joe'
+    },
+    {
+      type: '+',
+      key: [ 'coins', '2' ],
+      value: 1
+    },
+    {
+      type: '+-',
+      key: [ 'children', '$name=kid1', 'age' ],
+      value: 0,
+      oldValue: 1
+    },
+    {
+      type: '+',
+      key: [ 'children', '$name=kid3' ],
+      value: { name: 'kid3', age: 3 } },
+    {
+      type: '-',
+      key: [ 'age' ],
+      value: 55
+    }
+  ]
+
+  expect(changesets.applyChange(oldObj, diffs)).to.eql {
+    name: 'smith',
+    coins: [2, 5, 1],
+    children: [
+      {name: 'kid3', age: 3 },
+      {name: 'kid1', age: 0 },
+      {name: 'kid2', age: 2 }
+    ]};
+
+```
 
 
 ### Revert an object to previous state with a changeset
+#### Examples:
+
+```javascript
+
+  var changesets = require('./index');
+
+  var newObj = {
+    name: 'smith',
+    coins: [2, 5, 1],
+    children: [
+      {name: 'kid3', age: 3 },
+      {name: 'kid1', age: 0 },
+      {name: 'kid2', age: 2 }
+    ]};
+
+  # Assume children is an array of child object and the child object has 'name' as its primary key
+  diffs = [
+    {
+      type: '+-',
+      key: [ 'name' ],
+      value: 'smith',
+      oldValue: 'joe'
+    },
+    {
+      type: '+',
+      key: [ 'coins', '2' ],
+      value: 1
+    },
+    {
+      type: '+-',
+      key: [ 'children', '$name=kid1', 'age' ],
+      value: 0,
+      oldValue: 1
+    },
+    {
+      type: '+',
+      key: [ 'children', '$name=kid3' ],
+      value: { name: 'kid3', age: 3 } },
+    {
+      type: '-',
+      key: [ 'age' ],
+      value: 55
+    }
+  ]
+
+  expect(changesets.revertChanges(newObj, diffs)).to.eql {
+    name: 'joe',
+    age: 55,
+    coins: [2, 5],
+    children: [
+      {name: 'kid1', age: 1 },
+      {name: 'kid2', age: 2 }
+    ]};
+
+```
 
 ## Get started
 
