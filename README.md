@@ -1,10 +1,11 @@
 # diff-json
+[![Build Status](https://travis-ci.org/viruschidai/diff-json.png?branch=master)](https://travis-ci.org/viruschidai/diff-json)
 
-A changesets tool for javascript objects inspired by https://github.com/eugeneware/changeset.
+A diff tool for javascript objects inspired by https://github.com/eugeneware/changeset.
 
 ## Features
 
-### Generate diff between different versions of an object.
+### Generate diff
 
 If a key is specified for an embedded array, the diff will be generated based on the objects have same keys.
 
@@ -12,7 +13,7 @@ If a key is specified for an embedded array, the diff will be generated based on
 
 ```javascript
 
-  var changesets = require('./index');
+  var changesets = require('diff-json');
   var newObj, oldObj;
 
   oldObj = {
@@ -46,12 +47,12 @@ If a key is specified for an embedded array, the diff will be generated based on
   ]);
 ```
 
-### Apply changeset to an object to make a new version of the object
+### Apply a diff to an object
 #### Examples:
 
 ```javascript
 
-  var changesets = require('./index');
+  var changesets = require('diff-json');
   var oldObj = {
     name: 'joe',
     age: 55,
@@ -82,12 +83,12 @@ If a key is specified for an embedded array, the diff will be generated based on
 
 ```
 
-### Revert an object to previous state with a changeset
+### Revert an diff on an object
 #### Examples:
 
 ```javascript
 
-  var changesets = require('./index');
+  var changesets = require('diff-json');
 
   var newObj = {
     name: 'smith',

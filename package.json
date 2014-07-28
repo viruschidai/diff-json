@@ -1,7 +1,7 @@
 {
   "name": "diff-json",
   "version": "0.0.1",
-  "description": "Generates changesets for javascript objects. The changesets can be stored as a way of auditing history of an object.",
+  "description": "Generates diffs of javascript objects.",
   "main": "index.js",
   "scripts": {
     "test": "NODE_ENV=test mocha --compilers coffee:coffee-script/register -R spec --recursive test",
@@ -9,17 +9,23 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:viruschidai/changesets.git"
+    "url": "git@github.com:viruschidai/diff-json.git"
   },
   "keywords": [
-    "javascript"
+    "javascript",
+    "JSON",
+    "diff",
+    "patch",
+    "revert",
+    "apply changes",
+    "revert changes"
   ],
   "author": "viruschidai@gmail.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/viruschidai/changesets/issues"
+    "url": "https://github.com/viruschidai/diff-json/issues"
   },
-  "homepage": "https://github.com/viruschidai/changesets",
+  "homepage": "https://github.com/viruschidai/diff-json",
   "dependencies": {
     "underscore": "^1.6.0"
   },
