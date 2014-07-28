@@ -1,4 +1,4 @@
-# changesets
+# diff-json
 
 A changesets tool for javascript objects inspired by https://github.com/eugeneware/changeset.
 
@@ -82,7 +82,6 @@ If a key is specified for an embedded array, the diff will be generated based on
 
 ```
 
-
 ### Revert an object to previous state with a changeset
 #### Examples:
 
@@ -122,7 +121,7 @@ If a key is specified for an embedded array, the diff will be generated based on
 ## Get started
 
 ```
-npm install changesets
+npm install diff-json
 ```
 
 ## Run the test

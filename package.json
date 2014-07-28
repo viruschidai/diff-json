@@ -1,5 +1,5 @@
 {
-  "name": "changes",
+  "name": "diff-json",
   "version": "0.0.1",
   "description": "Generates changesets for javascript objects. The changesets can be stored as a way of auditing history of an object.",
   "main": "index.js",
