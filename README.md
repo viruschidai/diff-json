@@ -5,7 +5,7 @@ A diff tool for javascript objects inspired by https://github.com/eugeneware/cha
 
 ## Features
 
-### Generate diff
+### diff
 
 If a key is specified for an embedded array, the diff will be generated based on the objects have same keys.
 
@@ -47,7 +47,7 @@ If a key is specified for an embedded array, the diff will be generated based on
   ]);
 ```
 
-### Apply a diff to an object
+### applyChange
 #### Examples:
 
 ```javascript
@@ -83,7 +83,7 @@ If a key is specified for an embedded array, the diff will be generated based on
 
 ```
 
-### Revert an diff on an object
+### revertChange
 #### Examples:
 
 ```javascript
