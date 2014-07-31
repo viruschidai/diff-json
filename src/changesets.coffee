@@ -101,8 +101,6 @@ applyChange = (obj, change) ->
           modifyKeyValue ptr, key, change.value
         when exports.op.DELETED
           removeKey ptr, key
-        else
-          throw new Error "Unrecongnised change type #{change.type}"
     else
       ptr = getNextPtr ptr, key
   return obj
@@ -160,8 +158,6 @@ revertChange = (obj, change) ->
           modifyKeyValue ptr, key, change.oldValue
         when exports.op.DELETED
           addKeyValue ptr, key, change.value
-        else
-          throw new Error "Unrecongnised change type #{change.type}"
     else
       ptr = getNextPtr ptr, key
 
