@@ -1,6 +1,6 @@
 {
   "name": "diff-json",
-  "version": "0.0.3",
+  "version": "0.1.1",
   "description": "Generates diffs of javascript objects.",
   "main": "index.js",
   "scripts": {

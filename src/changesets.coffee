@@ -1,9 +1,11 @@
 _ = require 'underscore'
+util = require 'util'
+
 
 exports.op =
-  DELETED: '-'
-  ADDED: '+'
-  MODIFIED: '+-'
+  REMOVE: 'remove'
+  ADD: 'add'
+  UPDATE: 'update'
 
 
 getTypeOfObj = (obj) ->
@@ -16,6 +18,10 @@ getTypeOfObj = (obj) ->
   return Object.prototype.toString.call(obj) .match(/^\[object\s(.*)\]$/)[1];
 
 
+getKey = (path) ->
+  path[path.length - 1] ? '$root'
+
+
 compare = (oldObj, newObj, path, embededObjKeys) ->
   changes = []
 
@@ -24,12 +30,17 @@ compare = (oldObj, newObj, path, embededObjKeys) ->
 
   # if type of object changes, consider it as old obj has been deleted and a new object has been added
   if typeOfOldObj != typeOfNewObj
-    changes.push type: exports.op.DELETED, key: path, value: oldObj
-    changes.push type: exports.op.ADDED, key: path, value: newObj
+    changes.push type: exports.op.REMOVE, key: key: getKey(path), value: oldObj
+    changes.push type: exports.op.ADD, key: getKey(path), value: newObj
 
   switch typeOfOldObj
     when 'Object'
-      changes = changes.concat compareObject oldObj, newObj, path, embededObjKeys
+      diffs = compareObject oldObj, newObj, path, embededObjKeys
+      if diffs.length
+        if path.length
+          changes.push type: exports.op.UPDATE, key: getKey(path), changes: diffs
+        else
+          changes = changes.concat diffs
     when 'Array'
       changes = changes.concat compareArray oldObj, newObj, path, embededObjKeys
     when 'Function'
@@ -49,34 +60,34 @@ compareObject = (oldObj, newObj, path, embededObjKeys) ->
   intersectionKeys = _.intersection oldObjKeys, newObjKeys
   for k in intersectionKeys
     newPath = path.concat [k]
-    changes = changes.concat compare oldObj[k], newObj[k], newPath, embededObjKeys
+    diffs = compare oldObj[k], newObj[k], newPath, embededObjKeys
+    if diffs.length
+      changes = changes.concat diffs
 
   addedKeys = _.difference newObjKeys, oldObjKeys
   for k in addedKeys
     newPath = path.concat [k]
-    changes.push type: exports.op.ADDED, key: newPath, value: newObj[k]
+    changes.push type: exports.op.ADD, key: getKey(newPath), value: newObj[k]
 
   deletedKeys = _.difference oldObjKeys, newObjKeys
   for k in deletedKeys
     newPath = path.concat [k]
-    changes.push type: exports.op.DELETED, key: newPath, value: oldObj[k]
-
+    changes.push type: exports.op.REMOVE, key: getKey(newPath), value: oldObj[k]
   return changes
 
 
 compareArray = (oldObj, newObj, path, embededObjKeys) ->
-  uniqKey = embededObjKeys?[path.join '.']
+  uniqKey = embededObjKeys?[path.join '.'] ? '$index'
   indexedOldObj = convertArrayToObj oldObj, uniqKey
   indexedNewObj = convertArrayToObj newObj, uniqKey
-  changes = compareObject indexedOldObj, indexedNewObj, path, embededObjKeys
+  diffs = compareObject indexedOldObj, indexedNewObj, path, embededObjKeys
+  return if diffs.length then [type: exports.op.UPDATE, key: getKey(path), embededKey: uniqKey, changes: diffs] else []
 
 
 convertArrayToObj = (arr, uniqKey) ->
   obj = {}
-  if uniqKey
-    for value in arr
-      key = value[uniqKey]
-      obj["$#{uniqKey}=#{key}"] = value
+  if uniqKey isnt '$index'
+    obj = _.indexBy arr, uniqKey
   else
     for index, value of arr then obj[index] = value
   return obj
@@ -85,36 +96,18 @@ convertArrayToObj = (arr, uniqKey) ->
 comparePrimitives = (oldObj, newObj, path) ->
   changes = []
   if oldObj isnt newObj
-    changes.push type: exports.op.MODIFIED, key: path, value: newObj, oldValue: oldObj
+    changes.push type: exports.op.UPDATE, key: getKey(path), value: newObj, oldValue: oldObj
   return changes
-
-
-applyChange = (obj, change) ->
-  keys = change.key
-  ptr = obj
-  for index, key of keys
-    if +index is (keys.length - 1)
-      switch change.type
-        when exports.op.ADDED
-          addKeyValue ptr, key, change.value
-        when exports.op.MODIFIED
-          modifyKeyValue ptr, key, change.value
-        when exports.op.DELETED
-          removeKey ptr, key
-    else
-      ptr = getNextPtr ptr, key
-  return obj
 
 
 isEmbeddedKey = (key) -> /\$.*=/gi.test key
 
 
-removeKey = (obj, key) ->
+removeKey = (obj, key, embededKey) ->
   if Array.isArray obj
-    if isEmbeddedKey key
-      {uniqKey, value} = parseEmbeddedKeyValue key
-      index = indexOfItemInArray obj, uniqKey, value
-    obj.splice key, 1
+    if embededKey isnt '$index'
+      index = indexOfItemInArray obj, embededKey, key
+    obj.splice index ? key, 1
   else
     delete obj[key]
 
@@ -133,46 +126,88 @@ addKeyValue = (obj, key, value) ->
   if Array.isArray obj then obj.push value else obj[key] = value
 
 
-getNextPtr = (obj, key) ->
-  if Array.isArray(obj) and isEmbeddedKey(key)
-    {uniqKey, value} = parseEmbeddedKeyValue key
-    return _.find obj, (item) -> item[uniqKey] is value
-  return obj[key]
-
-
 parseEmbeddedKeyValue = (key) ->
   uniqKey = key.substring 1, key.indexOf '='
   value = key.substring key.indexOf('=') + 1
   return {uniqKey, value}
 
 
-revertChange = (obj, change) ->
-  keys = change.key
-  ptr = obj
-  for index, key of keys
-    if +index is (keys.length - 1)
-      switch change.type
-        when exports.op.ADDED
-          removeKey ptr, key
-        when exports.op.MODIFIED
-          modifyKeyValue ptr, key, change.oldValue
-        when exports.op.DELETED
-          addKeyValue ptr, key, change.value
-    else
-      ptr = getNextPtr ptr, key
+applyLeafChange = (obj, change) ->
+  {type, key, value} = change
+  switch type
+    when exports.op.ADD
+      addKeyValue obj, key, value
+    when exports.op.UPDATE
+      modifyKeyValue obj, key, value
+    when exports.op.REMOVE
+      removeKey obj, key, change.embededKey
 
-  return obj
+
+applyArrayChange = (arr, change) ->
+  for subchange in change.changes
+    if subchange.value?
+      applyLeafChange arr, subchange, change.embededKey
+    else
+      if change.embededKey is '$index'
+        element = arr[+subchange.key]
+      else
+        element = _.find arr, (el) -> el[change.embededKey] is subchange.key
+      exports.applyChanges element, subchange.changes
+
+
+applyBranchChange = (obj, change) ->
+  if Array.isArray obj
+    applyArrayChange obj, change
+  else
+    exports.applyChanges obj[change.key], change.changes
+
+
+revertLeafChange = (obj, change, embededKey) ->
+  {type, key, value, oldValue} = change
+  switch type
+    when exports.op.ADD
+      removeKey obj, key, embededKey
+    when exports.op.UPDATE
+      modifyKeyValue obj, key, oldValue
+    when exports.op.REMOVE
+      addKeyValue obj, key, value
+
+
+revertArrayChange = (arr, change) ->
+  for subchange in change.changes
+    if subchange.value?
+      revertLeafChange arr, subchange, change.embededKey
+    else
+      if change.embededKey is '$index'
+        element = arr[+subchange.key]
+      else
+        element = _.find arr, (el) -> el[change.embededKey] is subchange.key
+      exports.revertChanges element, subchange.changes
+
+
+revertBranchChange = (obj, change) ->
+  if Array.isArray obj
+    revertArrayChange obj, change
+  else
+    exports.revertChanges obj[change.key], change.changes
 
 
 exports.diff = (oldObj, newObj, embededObjKeys) ->
   return compare oldObj, newObj, [], embededObjKeys
 
 
-exports.applyChange = (obj, changeset) ->
+exports.applyChanges = (obj, changeset) ->
   for change in changeset
-    applyChange obj, change
+    if change.value?
+      applyLeafChange obj, change
+    else
+      applyBranchChange obj[change.key], change
 
 
-exports.revertChange = (obj, changeset) ->
+exports.revertChanges = (obj, changeset) ->
   for change in changeset
-    revertChange obj, change
+    if change.value?
+      revertLeafChange obj, change
+    else
+      revertBranchChange obj[change.key], change
+

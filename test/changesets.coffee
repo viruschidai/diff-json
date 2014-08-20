@@ -24,24 +24,38 @@ describe 'changesets', ->
         {name: 'kid2', age: 2}
       ]
 
-    changeset = [
-      {type: op.MODIFIED, key: [ 'name' ], value: 'smith', oldValue: 'joe'}
-      {type: op.ADDED, key: [ 'coins', 2 ], value: 1}
-      {type: op.MODIFIED, key: [ 'children', '$name=kid1', 'age' ], value: 0, oldValue: 1}
-      {type: op.ADDED, key: [ 'children', '$name=kid3' ], value: {name: 'kid3', age: 3}}
-      {type: op.DELETED, key: [ 'age' ], value: 55}
-    ]
+  changeset = [
+    { type: 'update', key: 'name', value: 'smith', oldValue: 'joe' }
+    { type: 'update', key: 'coins', embededKey: '$index', changes: [{ type: 'add', key: '2', value: 1 } ] }
+    { type: 'update', key: 'children', embededKey: 'name', changes: [
+        { type: 'update', key: 'kid1', changes: [{ type: 'update', key: 'age', value: 0, oldValue: 1 } ] }
+        { type: 'add', key: 'kid3', value: { name: 'kid3', age: 3 } }
+      ]
+    }
+    { type: 'remove', key: 'age', value: 55 }
+  ]
 
-    changesetWithouEmbeddedKey = [
-      {type: op.MODIFIED, key: [ 'name' ], value: 'smith', oldValue: 'joe'}
-      {type: op.ADDED, key: [ 'coins', 2 ], value: 1}
-      {type: op.MODIFIED, key: [ 'children', 0, 'name' ], value: 'kid3', oldValue: 'kid1'}
-      {type: op.MODIFIED, key: [ 'children', 0, 'age' ], value: 3, oldValue: 1}
-      {type: op.MODIFIED, key: [ 'children', 1, 'name' ], value: 'kid1', oldValue: 'kid2'}
-      {type: op.MODIFIED, key: [ 'children', 1, 'age' ], value: 0, oldValue: 2}
-      {type: op.ADDED, key: [ 'children', 2 ], value: {name: 'kid2', age: 2}}
-      {type: op.DELETED, key: [ 'age' ], value: 55}
-    ]
+  changesetWithouEmbeddedKey = [
+    { type: 'update', key: 'name', value: 'smith', oldValue: 'joe' },
+    { type: 'update', key: 'coins', embededKey: '$index', changes: [ { type: 'add', key: '2', value: 1 } ] }
+    { type: 'update', key: 'children', embededKey: '$index', changes: [
+          {
+            type: 'update', key: '0', changes: [
+              { type: 'update', key: 'name', value: 'kid3', oldValue: 'kid1' }
+              { type: 'update', key: 'age', value: 3, oldValue: 1 }
+            ]
+          }
+          {
+            type: 'update', key: '1', changes: [
+               { type: 'update', key: 'name', value: 'kid1', oldValue: 'kid2' }
+               { type: 'update', key: 'age', value: 0, oldValue: 2 }
+            ]
+          },
+          { type: 'add', key: '2', value: { name: 'kid2', age: 2 } }
+        ]
+    }
+    { type: 'remove', key: 'age', value: 55 }
+  ]
 
 
   describe 'diff()', ->
@@ -55,31 +69,31 @@ describe 'changesets', ->
       expect(diffs).to.eql changeset
 
 
-  describe 'applyChange()', ->
+  describe 'applyChanges()', ->
 
     it 'should transfer oldObj to newObj with changeset', ->
-      changesets.applyChange oldObj, changeset
+      changesets.applyChanges oldObj, changeset
       newObj.children.sort (a, b) -> a.name > b.name
       expect(oldObj).to.eql newObj
 
     it 'should transfer oldObj to newObj with changesetWithouEmbeddedKey', ->
-      changesets.applyChange oldObj, changesetWithouEmbeddedKey
+      changesets.applyChanges oldObj, changesetWithouEmbeddedKey
       newObj.children.sort (a, b) -> a.name > b.name
       oldObj.children.sort (a, b) -> a.name > b.name
       expect(oldObj).to.eql newObj
 
 
-  describe 'revert()', ->
+  describe 'revertChanges()', ->
 
     it 'should transfer newObj to oldObj with changeset', ->
-      changesets.revertChange newObj, changeset
+      changesets.revertChanges newObj, changeset
       oldObj.children.sort (a, b) -> a.name > b.name
       newObj.children.sort (a, b) -> a.name > b.name
       expect(newObj).to.eql oldObj
 
 
     it 'should transfer newObj to oldObj with changesetWithouEmbeddedKey', ->
-      changesets.revertChange newObj, changesetWithouEmbeddedKey
+      changesets.revertChanges newObj, changesetWithouEmbeddedKey
       oldObj.children.sort (a, b) -> a.name > b.name
       newObj.children.sort (a, b) -> a.name > b.name
       expect(newObj).to.eql oldObj
