@@ -39,12 +39,19 @@ If a key is specified for an embedded array, the diff will be generated based on
   diffs = changesets.diff(oldObj, newObj, {children: 'name'});
 
   expect(diffs).to.eql([
-    {type: '+-', key: ['name'], value: 'smith', oldValue: 'joe'},  # modified
-    {type: '+', key: ['coins', '2'], value: 1},  # added
-    {type: '+-', key: ['children', '$name=kid1', 'age'], value: 0, oldValue: 1},
-    {type: '+', key: ['children', '$name=kid3'], value: {name: 'kid3', age: 3}},
-    {type: '-', key: ['age'], value: 55}  # deleted
-  ]);
+    {type: 'update', key: 'name', value: 'smith', oldValue: 'joe'},
+    {type: 'update', key: 'coins', embededKey: '$index', changes: [{type: 'add', key: '2', value: 1 } ] },
+    {
+      type: 'update',
+      key: 'children',
+      embededKey: 'name',
+      changes: [
+        {type: 'update', key: 'kid1', changes: [{type: 'update', key: 'age', value: 0, oldValue: 1 } ] },
+        {type: 'add', key: 'kid3', value: {name: 'kid3', age: 3 } }
+      ]
+    },
+    {type: 'remove', key: 'age', value: 55 }
+]);
 ```
 
 ### applyChange
@@ -65,11 +72,18 @@ If a key is specified for an embedded array, the diff will be generated based on
 
   # Assume children is an array of child object and the child object has 'name' as its primary key
   diffs = [
-    {type: '+-', key: ['name'], value: 'smith', oldValue: 'joe'},  # modified
-    {type: '+', key: ['coins', '2'], value: 1},  # added
-    {type: '+-', key: ['children', '$name=kid1', 'age'], value: 0, oldValue: 1},
-    {type: '+', key: ['children', '$name=kid3'], value: {name: 'kid3', age: 3}},
-    {type: '-', key: ['age'], value: 55}  # deleted
+    {type: 'update', key: 'name', value: 'smith', oldValue: 'joe'},
+    {type: 'update', key: 'coins', embededKey: '$index', changes: [{type: 'add', key: '2', value: 1 } ] },
+    {
+      type: 'update',
+      key: 'children',
+      embededKey: 'name',
+      changes: [
+        {type: 'update', key: 'kid1', changes: [{type: 'update', key: 'age', value: 0, oldValue: 1 } ] },
+        {type: 'add', key: 'kid3', value: {name: 'kid3', age: 3 } }
+      ]
+    },
+    {type: 'remove', key: 'age', value: 55 }
   ]
 
   expect(changesets.applyChange(oldObj, diffs)).to.eql({
@@ -101,11 +115,18 @@ If a key is specified for an embedded array, the diff will be generated based on
 
   # Assume children is an array of child object and the child object has 'name' as its primary key
   diffs = [
-    {type: '+-', key: ['name'], value: 'smith', oldValue: 'joe'},  # modified
-    {type: '+', key: ['coins', '2'], value: 1},  # added
-    {type: '+-', key: ['children', '$name=kid1', 'age'], value: 0, oldValue: 1},
-    {type: '+', key: ['children', '$name=kid3'], value: {name: 'kid3', age: 3}},
-    {type: '-', key: ['age'], value: 55}  # deleted
+    {type: 'update', key: 'name', value: 'smith', oldValue: 'joe'},
+    {type: 'update', key: 'coins', embededKey: '$index', changes: [{type: 'add', key: '2', value: 1 } ] },
+    {
+      type: 'update',
+      key: 'children',
+      embededKey: 'name',
+      changes: [
+        {type: 'update', key: 'kid1', changes: [{type: 'update', key: 'age', value: 0, oldValue: 1 } ] },
+        {type: 'add', key: 'kid3', value: {name: 'kid3', age: 3 } }
+      ]
+    },
+    {type: 'remove', key: 'age', value: 55 }
  ]
 
   expect(changesets.revertChanges(newObj, diffs)).to.eql({
