@@ -3,7 +3,7 @@
   (function() {
     var addKeyValue, applyArrayChange, applyBranchChange, applyLeafChange, changeset, compare, compareArray, compareObject, comparePrimitives, convertArrayToObj, exports, getKey, getTypeOfObj, indexOfItemInArray, isEmbeddedKey, modifyKeyValue, parseEmbeddedKeyValue, removeKey, revertArrayChange, revertBranchChange, revertLeafChange, _;
     changeset = {
-      VERSION: '0.1.2'
+      VERSION: '0.1.3'
     };
     if (typeof module === 'object' && module.exports) {
       _ = require('lodash');

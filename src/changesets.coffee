@@ -1,7 +1,7 @@
 (->
 
   changeset =
-    VERSION: '0.1.2'
+    VERSION: '0.1.3'
 
   if typeof module is 'object' and module.exports
     _ = require 'lodash'
