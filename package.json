@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/viruschidai/diff-json",
   "dependencies": {
+    "lodash": "^2.4.1",
     "underscore": "^1.6.0"
   },
   "devDependencies": {
