@@ -97,7 +97,7 @@ If a key is specified for an embedded array, the diff will be generated based on
     {
       type: 'update',
       key: 'children',
-      embededKey: 'name',
+      embededKey: 'name', // The key property name of the elements in an array
       changes: [
         {
           type: 'update', key: 'kid1', changes: [
@@ -114,7 +114,8 @@ If a key is specified for an embedded array, the diff will be generated based on
     }
   ]
 
-  expect(changesets.applyChange(oldObj, diffs)).to.eql({
+  changesets.applyChanges(oldObj, diffs)
+  expect(oldObj).to.eql({
     name: 'smith',
     coins: [2, 5, 1],
     children: [
@@ -154,7 +155,7 @@ If a key is specified for an embedded array, the diff will be generated based on
     {
       type: 'update',
       key: 'children',
-      embededKey: 'name',
+      embededKey: 'name', // The key property name of the elements in an array
       changes: [
         {
           type: 'update', key: 'kid1', changes: [
@@ -170,6 +171,16 @@ If a key is specified for an embedded array, the diff will be generated based on
       type: 'remove', key: 'age', value: 55
     }
   ]
+
+  changesets.revertChanges(newObj, diffs)
+  expect(newObj).to.eql {
+    name: 'joe',
+    age: 55,
+    coins: [2, 5],
+    children: [
+      {name: 'kid1', age: 1},
+      {name: 'kid2', age: 2}
+    ]};
 
 ```
 
