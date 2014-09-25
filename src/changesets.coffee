@@ -37,6 +37,8 @@
       changes.push type: changeset.op.ADD, key: getKey(path), value: newObj
 
     switch typeOfOldObj
+      when 'Date'
+        changes = changes.concat comparePrimitives oldObj.getTime(), newObj.getTime(), path
       when 'Object'
         diffs = compareObject oldObj, newObj, path, embededObjKeys
         if diffs.length
