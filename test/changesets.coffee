@@ -9,6 +9,7 @@ describe 'changesets', ->
     oldObj =
       name: 'joe'
       age: 55
+      date: new Date 'October 13, 2014 11:13:00'
       coins: [2, 5]
       children: [
         {name: 'kid1', age: 1}
@@ -17,6 +18,7 @@ describe 'changesets', ->
 
     newObj =
       name: 'smith'
+      date: new Date 'October 13, 2014 11:13:00'
       coins: [2, 5, 1]
       children: [
         {name: 'kid3', age: 3}
