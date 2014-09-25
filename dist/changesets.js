@@ -32,16 +32,15 @@
       if (typeOfOldObj !== typeOfNewObj) {
         changes.push({
           type: changeset.op.REMOVE,
-          key: {
-            key: getKey(path),
-            value: oldObj
-          }
+          key: getKey(path),
+          value: oldObj
         });
         changes.push({
           type: changeset.op.ADD,
           key: getKey(path),
           value: newObj
         });
+        return changes;
       }
       switch (typeOfOldObj) {
         case 'Date':
@@ -297,10 +296,11 @@
       return _results;
     };
     return changeset.revertChanges = function(obj, changeset) {
-      var change, _i, _len, _results;
+      var change, _i, _len, _ref, _results;
+      _ref = changeset.reverse();
       _results = [];
-      for (_i = 0, _len = changeset.length; _i < _len; _i++) {
-        change = changeset[_i];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        change = _ref[_i];
         if (change.value != null) {
           _results.push(revertLeafChange(obj, change));
         } else {
