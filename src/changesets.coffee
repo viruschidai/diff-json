@@ -33,8 +33,9 @@
 
     # if type of object changes, consider it as old obj has been deleted and a new object has been added
     if typeOfOldObj != typeOfNewObj
-      changes.push type: changeset.op.REMOVE, key: key: getKey(path), value: oldObj
+      changes.push type: changeset.op.REMOVE, key: getKey(path), value: oldObj
       changes.push type: changeset.op.ADD, key: getKey(path), value: newObj
+      return changes
 
     switch typeOfOldObj
       when 'Date'
@@ -216,7 +217,7 @@
 
 
   changeset.revertChanges = (obj, changeset) ->
-      for change in changeset
+      for change in changeset.reverse()
         if change.value?
           revertLeafChange obj, change
         else
