@@ -9,6 +9,7 @@ describe 'changesets', ->
     oldObj =
       name: 'joe'
       age: 55
+      mixed: 10
       date: new Date 'October 13, 2014 11:13:00'
       coins: [2, 5]
       children: [
@@ -18,6 +19,7 @@ describe 'changesets', ->
 
     newObj =
       name: 'smith'
+      mixed: '10'
       date: new Date 'October 13, 2014 11:13:00'
       coins: [2, 5, 1]
       children: [
@@ -28,6 +30,8 @@ describe 'changesets', ->
 
   changeset = [
     { type: 'update', key: 'name', value: 'smith', oldValue: 'joe' }
+    { type: 'remove', key: 'mixed', value: 10 }
+    { type: 'add', key: 'mixed', value: '10' }
     { type: 'update', key: 'coins', embededKey: '$index', changes: [{ type: 'add', key: '2', value: 1 } ] }
     { type: 'update', key: 'children', embededKey: 'name', changes: [
         { type: 'update', key: 'kid1', changes: [{ type: 'update', key: 'age', value: 0, oldValue: 1 } ] }
@@ -37,8 +41,10 @@ describe 'changesets', ->
     { type: 'remove', key: 'age', value: 55 }
   ]
 
-  changesetWithouEmbeddedKey = [
-    { type: 'update', key: 'name', value: 'smith', oldValue: 'joe' },
+  changesetWithoutEmbeddedKey = [
+    { type: 'update', key: 'name', value: 'smith', oldValue: 'joe' }
+    { type: 'remove', key: 'mixed', value: 10 }
+    { type: 'add', key: 'mixed', value: '10' }
     { type: 'update', key: 'coins', embededKey: '$index', changes: [ { type: 'add', key: '2', value: 1 } ] }
     { type: 'update', key: 'children', embededKey: '$index', changes: [
           {
@@ -64,7 +70,7 @@ describe 'changesets', ->
 
     it 'should return correct diff for object with embedded array object that does not have key specified', ->
       diffs = changesets.diff oldObj, newObj
-      expect(diffs).to.eql changesetWithouEmbeddedKey
+      expect(diffs).to.eql changesetWithoutEmbeddedKey
 
     it 'should return correct diff for object with embedded array that has key specified', ->
       diffs = changesets.diff oldObj, newObj, {'children': 'name'}
@@ -78,8 +84,8 @@ describe 'changesets', ->
       newObj.children.sort (a, b) -> a.name > b.name
       expect(oldObj).to.eql newObj
 
-    it 'should transfer oldObj to newObj with changesetWithouEmbeddedKey', ->
-      changesets.applyChanges oldObj, changesetWithouEmbeddedKey
+    it 'should transfer oldObj to newObj with changesetWithoutEmbeddedKey', ->
+      changesets.applyChanges oldObj, changesetWithoutEmbeddedKey
       newObj.children.sort (a, b) -> a.name > b.name
       oldObj.children.sort (a, b) -> a.name > b.name
       expect(oldObj).to.eql newObj
@@ -94,8 +100,8 @@ describe 'changesets', ->
       expect(newObj).to.eql oldObj
 
 
-    it 'should transfer newObj to oldObj with changesetWithouEmbeddedKey', ->
-      changesets.revertChanges newObj, changesetWithouEmbeddedKey
+    it 'should transfer newObj to oldObj with changesetWithoutEmbeddedKey', ->
+      changesets.revertChanges newObj, changesetWithoutEmbeddedKey
       oldObj.children.sort (a, b) -> a.name > b.name
       newObj.children.sort (a, b) -> a.name > b.name
       expect(newObj).to.eql oldObj
