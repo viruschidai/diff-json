@@ -44,6 +44,9 @@
         });
       }
       switch (typeOfOldObj) {
+        case 'Date':
+          changes = changes.concat(comparePrimitives(oldObj.getTime(), newObj.getTime(), path));
+          break;
         case 'Object':
           diffs = compareObject(oldObj, newObj, path, embededObjKeys);
           if (diffs.length) {
