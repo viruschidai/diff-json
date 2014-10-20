@@ -198,28 +198,30 @@
       changeset.revertChanges obj[change.key], change.changes
 
 
-  changeset.op =
-      REMOVE: 'remove'
-      ADD: 'add'
-      UPDATE: 'update'
-
-
   changeset.diff = (oldObj, newObj, embededObjKeys) ->
-      return compare oldObj, newObj, [], embededObjKeys
+    return compare oldObj, newObj, [], embededObjKeys
 
 
   changeset.applyChanges = (obj, changeset) ->
-      for change in changeset
-        if change.value?
-          applyLeafChange obj, change
-        else
-          applyBranchChange obj[change.key], change
+    for change in changeset
+      if change.value?
+        applyLeafChange obj, change
+      else
+        applyBranchChange obj[change.key], change
 
 
   changeset.revertChanges = (obj, changeset) ->
-      for change in changeset.reverse()
-        if change.value?
-          revertLeafChange obj, change
-        else
-          revertBranchChange obj[change.key], change
+    for change in changeset.reverse()
+      if !change.changes
+        revertLeafChange obj, change
+      else
+        revertBranchChange obj[change.key], change
+
+
+  changeset.op =
+    REMOVE: 'remove'
+    ADD: 'add'
+    UPDATE: 'update'
+
+  return
 )()
