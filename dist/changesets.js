@@ -24,7 +24,7 @@
       var _ref;
       return (_ref = path[path.length - 1]) != null ? _ref : '$root';
     };
-    compare = function(oldObj, newObj, path, embededObjKeys) {
+    compare = function(oldObj, newObj, path, embededObjKeys, keyPath) {
       var changes, diffs, typeOfNewObj, typeOfOldObj;
       changes = [];
       typeOfOldObj = getTypeOfObj(oldObj);
@@ -47,7 +47,7 @@
           changes = changes.concat(comparePrimitives(oldObj.getTime(), newObj.getTime(), path));
           break;
         case 'Object':
-          diffs = compareObject(oldObj, newObj, path, embededObjKeys);
+          diffs = compareObject(oldObj, newObj, path, embededObjKeys, keyPath);
           if (diffs.length) {
             if (path.length) {
               changes.push({
@@ -61,7 +61,7 @@
           }
           break;
         case 'Array':
-          changes = changes.concat(compareArray(oldObj, newObj, path, embededObjKeys));
+          changes = changes.concat(compareArray(oldObj, newObj, path, embededObjKeys, keyPath));
           break;
         case 'Function':
           break;
@@ -70,8 +70,11 @@
       }
       return changes;
     };
-    compareObject = function(oldObj, newObj, path, embededObjKeys) {
-      var addedKeys, changes, deletedKeys, diffs, intersectionKeys, k, newObjKeys, newPath, oldObjKeys, _i, _j, _k, _len, _len1, _len2;
+    compareObject = function(oldObj, newObj, path, embededObjKeys, keyPath, skipPath) {
+      var addedKeys, changes, deletedKeys, diffs, intersectionKeys, k, newKeyPath, newObjKeys, newPath, oldObjKeys, _i, _j, _k, _len, _len1, _len2;
+      if (skipPath == null) {
+        skipPath = false;
+      }
       changes = [];
       oldObjKeys = Object.keys(oldObj);
       newObjKeys = Object.keys(newObj);
@@ -79,7 +82,8 @@
       for (_i = 0, _len = intersectionKeys.length; _i < _len; _i++) {
         k = intersectionKeys[_i];
         newPath = path.concat([k]);
-        diffs = compare(oldObj[k], newObj[k], newPath, embededObjKeys);
+        newKeyPath = skipPath ? keyPath : keyPath.concat([k]);
+        diffs = compare(oldObj[k], newObj[k], newPath, embededObjKeys, newKeyPath);
         if (diffs.length) {
           changes = changes.concat(diffs);
         }
@@ -88,6 +92,7 @@
       for (_j = 0, _len1 = addedKeys.length; _j < _len1; _j++) {
         k = addedKeys[_j];
         newPath = path.concat([k]);
+        newKeyPath = skipPath ? keyPath : keyPath.concat([k]);
         changes.push({
           type: changeset.op.ADD,
           key: getKey(newPath),
@@ -98,6 +103,7 @@
       for (_k = 0, _len2 = deletedKeys.length; _k < _len2; _k++) {
         k = deletedKeys[_k];
         newPath = path.concat([k]);
+        newKeyPath = skipPath ? keyPath : keyPath.concat([k]);
         changes.push({
           type: changeset.op.REMOVE,
           key: getKey(newPath),
@@ -106,12 +112,12 @@
       }
       return changes;
     };
-    compareArray = function(oldObj, newObj, path, embededObjKeys) {
+    compareArray = function(oldObj, newObj, path, embededObjKeys, keyPath) {
       var diffs, indexedNewObj, indexedOldObj, uniqKey, _ref;
-      uniqKey = (_ref = embededObjKeys != null ? embededObjKeys[path.join('.')] : void 0) != null ? _ref : '$index';
+      uniqKey = (_ref = embededObjKeys != null ? embededObjKeys[keyPath.join('.')] : void 0) != null ? _ref : '$index';
       indexedOldObj = convertArrayToObj(oldObj, uniqKey);
       indexedNewObj = convertArrayToObj(newObj, uniqKey);
-      diffs = compareObject(indexedOldObj, indexedNewObj, path, embededObjKeys);
+      diffs = compareObject(indexedOldObj, indexedNewObj, path, embededObjKeys, keyPath, true);
       if (diffs.length) {
         return [
           {
@@ -275,7 +281,7 @@
       }
     };
     changeset.diff = function(oldObj, newObj, embededObjKeys) {
-      return compare(oldObj, newObj, [], embededObjKeys);
+      return compare(oldObj, newObj, [], embededObjKeys, []);
     };
     changeset.applyChanges = function(obj, changeset) {
       var change, _i, _len, _results;

@@ -25,7 +25,7 @@
     path[path.length - 1] ? '$root'
 
 
-  compare = (oldObj, newObj, path, embededObjKeys) ->
+  compare = (oldObj, newObj, path, embededObjKeys, keyPath) ->
     changes = []
 
     typeOfOldObj = getTypeOfObj oldObj
@@ -41,14 +41,14 @@
       when 'Date'
         changes = changes.concat comparePrimitives oldObj.getTime(), newObj.getTime(), path
       when 'Object'
-        diffs = compareObject oldObj, newObj, path, embededObjKeys
+        diffs = compareObject oldObj, newObj, path, embededObjKeys, keyPath
         if diffs.length
           if path.length
             changes.push type: changeset.op.UPDATE, key: getKey(path), changes: diffs
           else
             changes = changes.concat diffs
       when 'Array'
-        changes = changes.concat compareArray oldObj, newObj, path, embededObjKeys
+        changes = changes.concat compareArray oldObj, newObj, path, embededObjKeys, keyPath
       when 'Function'
         # do nothing
       else
@@ -57,7 +57,7 @@
     return changes
 
 
-  compareObject = (oldObj, newObj, path, embededObjKeys) ->
+  compareObject = (oldObj, newObj, path, embededObjKeys, keyPath, skipPath = false) ->
     changes = []
 
     oldObjKeys = Object.keys(oldObj)
@@ -66,27 +66,30 @@
     intersectionKeys = _.intersection oldObjKeys, newObjKeys
     for k in intersectionKeys
       newPath = path.concat [k]
-      diffs = compare oldObj[k], newObj[k], newPath, embededObjKeys
+      newKeyPath = if skipPath then keyPath else keyPath.concat [k]
+      diffs = compare oldObj[k], newObj[k], newPath, embededObjKeys, newKeyPath
       if diffs.length
         changes = changes.concat diffs
 
     addedKeys = _.difference newObjKeys, oldObjKeys
     for k in addedKeys
       newPath = path.concat [k]
+      newKeyPath = if skipPath then keyPath else keyPath.concat [k]
       changes.push type: changeset.op.ADD, key: getKey(newPath), value: newObj[k]
 
     deletedKeys = _.difference oldObjKeys, newObjKeys
     for k in deletedKeys
       newPath = path.concat [k]
+      newKeyPath = if skipPath then keyPath else keyPath.concat [k]
       changes.push type: changeset.op.REMOVE, key: getKey(newPath), value: oldObj[k]
     return changes
 
 
-  compareArray = (oldObj, newObj, path, embededObjKeys) ->
-    uniqKey = embededObjKeys?[path.join '.'] ? '$index'
+  compareArray = (oldObj, newObj, path, embededObjKeys, keyPath) ->
+    uniqKey = embededObjKeys?[keyPath.join '.'] ? '$index'
     indexedOldObj = convertArrayToObj oldObj, uniqKey
     indexedNewObj = convertArrayToObj newObj, uniqKey
-    diffs = compareObject indexedOldObj, indexedNewObj, path, embededObjKeys
+    diffs = compareObject indexedOldObj, indexedNewObj, path, embededObjKeys, keyPath, true
     return if diffs.length then [type: changeset.op.UPDATE, key: getKey(path), embededKey: uniqKey, changes: diffs] else []
 
 
@@ -199,7 +202,7 @@
 
 
   changeset.diff = (oldObj, newObj, embededObjKeys) ->
-    return compare oldObj, newObj, [], embededObjKeys
+    return compare oldObj, newObj, [], embededObjKeys, []
 
 
   changeset.applyChanges = (obj, changeset) ->

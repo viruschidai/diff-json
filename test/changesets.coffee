@@ -1,4 +1,5 @@
 expect = require 'expect.js'
+util = require 'util'
 changesets = require '../src/changesets'
 {op} = changesets
 
@@ -13,9 +14,13 @@ describe 'changesets', ->
       date: new Date 'October 13, 2014 11:13:00'
       coins: [2, 5]
       children: [
-        {name: 'kid1', age: 1}
+        {name: 'kid1', age: 1, subset: [
+          {id: 1, value: 'haha'}
+          {id: 2, value: 'hehe'}
+        ]}
         {name: 'kid2', age: 2}
       ]
+
 
     newObj =
       name: 'smith'
@@ -24,9 +29,12 @@ describe 'changesets', ->
       coins: [2, 5, 1]
       children: [
         {name: 'kid3', age: 3}
-        {name: 'kid1', age: 0}
+        {name: 'kid1', age: 0, subset: [
+          {id: 1, value: 'heihei'}
+        ]}
         {name: 'kid2', age: 2}
       ]
+
 
   changeset = [
     { type: 'update', key: 'name', value: 'smith', oldValue: 'joe' }
@@ -34,10 +42,18 @@ describe 'changesets', ->
     { type: 'add', key: 'mixed', value: '10' }
     { type: 'update', key: 'coins', embededKey: '$index', changes: [{ type: 'add', key: '2', value: 1 } ] }
     { type: 'update', key: 'children', embededKey: 'name', changes: [
-        { type: 'update', key: 'kid1', changes: [{ type: 'update', key: 'age', value: 0, oldValue: 1 } ] }
+        { type: 'update', key: 'kid1', changes: [
+          { type: 'update', key: 'age', value: 0, oldValue: 1 }
+          { type: 'update', key: 'subset', embededKey: 'id', changes: [
+              { type: 'update', key: 1, changes: [{ type: 'update', key: 'value', value: 'heihei', oldValue: 'haha' } ] }
+              { type: 'remove', key: 2, value: {id: 2, value: 'hehe'} }
+            ]
+          }
+        ]}
         { type: 'add', key: 'kid3', value: { name: 'kid3', age: 3 } }
       ]
     }
+
     { type: 'remove', key: 'age', value: 55 }
   ]
 
@@ -51,17 +67,20 @@ describe 'changesets', ->
             type: 'update', key: '0', changes: [
               { type: 'update', key: 'name', value: 'kid3', oldValue: 'kid1' }
               { type: 'update', key: 'age', value: 3, oldValue: 1 }
+              { type: 'remove', key: 'subset', value: [ { id: 1, value: 'haha' }, { id: 2, value: 'hehe' } ]}
             ]
           }
           {
             type: 'update', key: '1', changes: [
                { type: 'update', key: 'name', value: 'kid1', oldValue: 'kid2' }
                { type: 'update', key: 'age', value: 0, oldValue: 2 }
+               { type: 'add', key: 'subset', value: [ { id: 1, value: 'heihei' } ] }
             ]
           },
           { type: 'add', key: '2', value: { name: 'kid2', age: 2 } }
         ]
     }
+
     { type: 'remove', key: 'age', value: 55 }
   ]
 
@@ -73,7 +92,7 @@ describe 'changesets', ->
       expect(diffs).to.eql changesetWithoutEmbeddedKey
 
     it 'should return correct diff for object with embedded array that has key specified', ->
-      diffs = changesets.diff oldObj, newObj, {'children': 'name'}
+      diffs = changesets.diff oldObj, newObj, {'children': 'name', 'children.subset': 'id'}
       expect(diffs).to.eql changeset
 
 
