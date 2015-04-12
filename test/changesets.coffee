@@ -11,8 +11,11 @@ describe 'changesets', ->
       name: 'joe'
       age: 55
       mixed: 10
+      empty: undefined
       date: new Date 'October 13, 2014 11:13:00'
       coins: [2, 5]
+      toys: ['car', 'doll', 'car']
+      pets: [undefined, null]
       children: [
         {name: 'kid1', age: 1, subset: [
           {id: 1, value: 'haha'}
@@ -27,6 +30,8 @@ describe 'changesets', ->
       mixed: '10'
       date: new Date 'October 13, 2014 11:13:00'
       coins: [2, 5, 1]
+      toys: []
+      pets: []
       children: [
         {name: 'kid3', age: 3}
         {name: 'kid1', age: 0, subset: [
@@ -41,6 +46,17 @@ describe 'changesets', ->
     { type: 'remove', key: 'mixed', value: 10 }
     { type: 'add', key: 'mixed', value: '10' }
     { type: 'update', key: 'coins', embededKey: '$index', changes: [{ type: 'add', key: '2', value: 1 } ] }
+    { type: 'update', key: 'toys', embededKey: '$index', changes: [
+        { type: 'remove', key: '0', value: 'car' }
+        { type: 'remove', key: '1', value: 'doll' }
+        { type: 'remove', key: '2', value: 'car' }
+      ] 
+    }
+    { type: 'update', key: 'pets', embededKey: '$index', changes: [
+        { type: 'remove', key: '0', value: undefined }
+        { type: 'remove', key: '1', value: null }
+      ]
+    }
     { type: 'update', key: 'children', embededKey: 'name', changes: [
         { type: 'update', key: 'kid1', changes: [
           { type: 'update', key: 'age', value: 0, oldValue: 1 }
@@ -55,6 +71,7 @@ describe 'changesets', ->
     }
 
     { type: 'remove', key: 'age', value: 55 }
+    { type: 'remove', key: 'empty', value: undefined }
   ]
 
   changesetWithoutEmbeddedKey = [
@@ -62,6 +79,17 @@ describe 'changesets', ->
     { type: 'remove', key: 'mixed', value: 10 }
     { type: 'add', key: 'mixed', value: '10' }
     { type: 'update', key: 'coins', embededKey: '$index', changes: [ { type: 'add', key: '2', value: 1 } ] }
+    { type: 'update', key: 'toys', embededKey: '$index', changes: [
+        { type: 'remove', key: '0', value: 'car' }
+        { type: 'remove', key: '1', value: 'doll' }
+        { type: 'remove', key: '2', value: 'car' }
+      ]
+    }
+    { type: 'update', key: 'pets', embededKey: '$index', changes: [
+        { type: 'remove', key: '0', value: undefined }
+        { type: 'remove', key: '1', value: null }
+      ]
+    }
     { type: 'update', key: 'children', embededKey: '$index', changes: [
           {
             type: 'update', key: '0', changes: [
@@ -82,6 +110,7 @@ describe 'changesets', ->
     }
 
     { type: 'remove', key: 'age', value: 55 }
+    { type: 'remove', key: 'empty', value: undefined }
   ]
 
 

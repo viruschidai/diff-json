@@ -114,7 +114,7 @@
 
   removeKey = (obj, key, embededKey) ->
     if Array.isArray obj
-      if embededKey isnt '$index'
+      if embededKey isnt '$index' or !obj[key]
         index = indexOfItemInArray obj, embededKey, key
       obj.splice index ? key, 1
     else
@@ -123,7 +123,9 @@
 
   indexOfItemInArray = (arr, key, value) ->
     for index, item of arr
-      if item[key] is value then return index
+      if key is '$index'
+        if item is value then return index
+      else if item[key] is value then return index
 
     return -1
 
@@ -141,7 +143,7 @@
     return {uniqKey, value}
 
 
-  applyLeafChange = (obj, change) ->
+  applyLeafChange = (obj, change, embededKey) ->
     {type, key, value} = change
     switch type
       when changeset.op.ADD
@@ -149,12 +151,12 @@
       when changeset.op.UPDATE
         modifyKeyValue obj, key, value
       when changeset.op.REMOVE
-        removeKey obj, key, change.embededKey
+        removeKey obj, key, embededKey
 
 
   applyArrayChange = (arr, change) ->
     for subchange in change.changes
-      if subchange.value?
+      if subchange.value? or subchange.type is changeset.op.REMOVE
         applyLeafChange arr, subchange, change.embededKey
       else
         if change.embededKey is '$index'
@@ -184,7 +186,7 @@
 
   revertArrayChange = (arr, change) ->
     for subchange in change.changes
-      if subchange.value?
+      if subchange.value? or subchange.type is changeset.op.REMOVE
         revertLeafChange arr, subchange, change.embededKey
       else
         if change.embededKey is '$index'
@@ -205,10 +207,10 @@
     return compare oldObj, newObj, [], embededObjKeys, []
 
 
-  changeset.applyChanges = (obj, changeset) ->
-    for change in changeset
-      if change.value?
-        applyLeafChange obj, change
+  changeset.applyChanges = (obj, changesets) ->
+    for change in changesets
+      if change.value? or change.type is changeset.op.REMOVE
+        applyLeafChange obj, change, change.embededKey
       else
         applyBranchChange obj[change.key], change
 
