@@ -11,6 +11,7 @@ describe 'changesets', ->
       name: 'joe'
       age: 55
       mixed: 10
+      nested: inner: 1
       empty: undefined
       date: new Date 'October 13, 2014 11:13:00'
       coins: [2, 5]
@@ -28,6 +29,7 @@ describe 'changesets', ->
     newObj =
       name: 'smith'
       mixed: '10'
+      nested: inner: 2
       date: new Date 'October 13, 2014 11:13:00'
       coins: [2, 5, 1]
       toys: []
@@ -45,6 +47,10 @@ describe 'changesets', ->
     { type: 'update', key: 'name', value: 'smith', oldValue: 'joe' }
     { type: 'remove', key: 'mixed', value: 10 }
     { type: 'add', key: 'mixed', value: '10' }
+    { type: 'update', key: 'nested', changes: [
+        { type: 'update', key: 'inner', value: 2, oldValue: 1}
+      ]
+    }
     { type: 'update', key: 'coins', embededKey: '$index', changes: [{ type: 'add', key: '2', value: 1 } ] }
     { type: 'update', key: 'toys', embededKey: '$index', changes: [
         { type: 'remove', key: '0', value: 'car' }
@@ -78,6 +84,10 @@ describe 'changesets', ->
     { type: 'update', key: 'name', value: 'smith', oldValue: 'joe' }
     { type: 'remove', key: 'mixed', value: 10 }
     { type: 'add', key: 'mixed', value: '10' }
+    { type: 'update', key: 'nested', changes: [
+        { type: 'update', key: 'inner', value: 2, oldValue: 1}
+      ]
+    }
     { type: 'update', key: 'coins', embededKey: '$index', changes: [ { type: 'add', key: '2', value: 1 } ] }
     { type: 'update', key: 'toys', embededKey: '$index', changes: [
         { type: 'remove', key: '0', value: 'car' }

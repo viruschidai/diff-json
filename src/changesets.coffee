@@ -170,7 +170,7 @@
     if Array.isArray obj
       applyArrayChange obj, change
     else
-      changeset.applyChanges obj[change.key], change.changes
+      changeset.applyChanges obj, change.changes
 
 
   revertLeafChange = (obj, change, embededKey) ->
@@ -200,7 +200,7 @@
     if Array.isArray obj
       revertArrayChange obj, change
     else
-      changeset.revertChanges obj[change.key], change.changes
+      changeset.revertChanges obj, change.changes
 
 
   changeset.diff = (oldObj, newObj, embededObjKeys) ->
