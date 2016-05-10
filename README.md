@@ -1,5 +1,6 @@
 # diff-json
 [![Build Status](https://travis-ci.org/viruschidai/diff-json.png?branch=master)](https://travis-ci.org/viruschidai/diff-json)
+[![Downloads](https://img.shields.io/npm/dm/diff-json.svg)](https://www.npmjs.com/package/diff-json)
 
 A diff tool for javascript objects inspired by https://github.com/eugeneware/changeset.
 
