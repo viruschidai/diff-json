@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/viruschidai/diff-json",
   "dependencies": {
-    "lodash": "^2.4.1"
+    "lodash": ">=4.0.0"
   },
   "devDependencies": {
     "coffee-script": "^1.7.1",

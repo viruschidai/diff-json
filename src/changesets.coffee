@@ -96,7 +96,7 @@
   convertArrayToObj = (arr, uniqKey) ->
     obj = {}
     if uniqKey isnt '$index'
-      obj = _.indexBy arr, uniqKey
+      obj = _.keyBy arr, uniqKey
     else
       for index, value of arr then obj[index] = value
     return obj
