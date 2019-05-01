@@ -4,7 +4,10 @@
     VERSION: '0.1.4'
 
   if typeof module is 'object' and module.exports
-    _ = require 'lodash'
+    _intersection = require 'lodash.intersection'
+    _difference = require 'lodash.difference'
+    _keyBy = require 'lodash.keyby'
+    _find = require 'lodash.find'
     module.exports = exports = changeset
   else
     # just set the global for non-node platforms.
@@ -63,7 +66,7 @@
     oldObjKeys = Object.keys(oldObj)
     newObjKeys = Object.keys(newObj)
 
-    intersectionKeys = _.intersection oldObjKeys, newObjKeys
+    intersectionKeys = _intersection oldObjKeys, newObjKeys
     for k in intersectionKeys
       newPath = path.concat [k]
       newKeyPath = if skipPath then keyPath else keyPath.concat [k]
@@ -71,13 +74,13 @@
       if diffs.length
         changes = changes.concat diffs
 
-    addedKeys = _.difference newObjKeys, oldObjKeys
+    addedKeys = _difference newObjKeys, oldObjKeys
     for k in addedKeys
       newPath = path.concat [k]
       newKeyPath = if skipPath then keyPath else keyPath.concat [k]
       changes.push type: changeset.op.ADD, key: getKey(newPath), value: newObj[k]
 
-    deletedKeys = _.difference oldObjKeys, newObjKeys
+    deletedKeys = _difference oldObjKeys, newObjKeys
     for k in deletedKeys
       newPath = path.concat [k]
       newKeyPath = if skipPath then keyPath else keyPath.concat [k]
@@ -96,7 +99,7 @@
   convertArrayToObj = (arr, uniqKey) ->
     obj = {}
     if uniqKey isnt '$index'
-      obj = _.keyBy arr, uniqKey
+      obj = _keyBy arr, uniqKey
     else
       for index, value of arr then obj[index] = value
     return obj
@@ -162,7 +165,7 @@
         if change.embededKey is '$index'
           element = arr[+subchange.key]
         else
-          element = _.find arr, (el) -> el[change.embededKey] is subchange.key
+          element = _find arr, (el) -> el[change.embededKey] is subchange.key
         changeset.applyChanges element, subchange.changes
 
 
@@ -192,7 +195,7 @@
         if change.embededKey is '$index'
           element = arr[+subchange.key]
         else
-          element = _.find arr, (el) -> el[change.embededKey] is subchange.key
+          element = _find arr, (el) -> el[change.embededKey] is subchange.key
         changeset.revertChanges element, subchange.changes
 
 
