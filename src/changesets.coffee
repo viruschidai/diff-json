@@ -212,7 +212,7 @@
 
   changeset.applyChanges = (obj, changesets) ->
     for change in changesets
-      if change.value? or change.type is changeset.op.REMOVE
+      if !change.changes or change.value? or change.type is changeset.op.REMOVE
         applyLeafChange obj, change, change.embededKey
       else
         applyBranchChange obj[change.key], change

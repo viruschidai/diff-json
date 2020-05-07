@@ -295,7 +295,7 @@
       results = [];
       for (i = 0, len = changesets.length; i < len; i++) {
         change = changesets[i];
-        if ((change.value != null) || change.type === changeset.op.REMOVE) {
+        if (!change.changes || (change.value != null) || change.type === changeset.op.REMOVE) {
           results.push(applyLeafChange(obj, change, change.embededKey));
         } else {
           results.push(applyBranchChange(obj[change.key], change));
